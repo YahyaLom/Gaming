@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>4G vs 5G İndirme ve Yükleme Simülasyonu</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            overflow-x: hidden;
+            overflow-y: auto;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #01022A 0%, #02044A 50%, #03066A 100%);
+            min-height: 100vh;
+            padding: 20px;
+            overflow-x: hidden;
+            overflow-y: auto;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+            position: relative;
+        }
+
+        .header-title-container {
+            position: relative;
+            display: inline-block;
+            margin-bottom: 20px;
+            min-width: 700px;
+            min-height: 450px;
+        }
+
+        .header-turkcell-text {
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 4rem;
+            color: #ffffff;
+            font-weight: bold;
+            text-align: center;
+            white-space: nowrap;
+            z-index: 3;
+            margin: 0;
+            padding: 0;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .header-center-image {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 200px;
+            height: 200px;
+            z-index: 1;
+            object-fit: contain;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .header-center-image:hover {
+            transform: translate(-50%, -50%) scale(1.1);
+        }
+
+        .header-star-image {
+            position: absolute;
+            width: 160px;
+            height: 160px;
+            object-fit: contain;
+            z-index: 1;
+            top: 50%;
+            left: 50%;
+            margin-top: -80px;
+            margin-left: -80px;
+        }
+
+        /* 5 gen şeklinde yerleştirme - üst (90°) */
+        .header-star-image.top-center {
+            margin-left: 0;
+            margin-top: 0;
+            transform: translate(-50%, -250px);
+        }
+
+        /* 5 gen şeklinde yerleştirme - sağ üst (18°) */
+        .header-star-image.top-right {
+            transform: translate(240px, -75px);
+        }
+
+        /* 5 gen şeklinde yerleştirme - sağ alt (54°) */
+        .header-star-image.bottom-right {
+            transform: translate(240px, 75px);
+        }
+
+        /* 5 gen şeklinde yerleştirme - sol alt (126°) */
+        .header-star-image.bottom-left {
+            transform: translate(-240px, 75px);
+        }
+
+        /* 5 gen şeklinde yerleştirme - sol üst (162°) */
+        .header-star-image.top-left {
+            transform: translate(-240px, -75px);
+        }
+
+        .header-simulate-text {
+            position: absolute;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 7rem;
+            color: #ffffff;
+            font-weight: bold;
+            text-align: center;
+            white-space: nowrap;
+            z-index: 2;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            color: #ffffff;
+            opacity: 0.9;
+        }
+
+        .scenarios-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .scenario-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .scenario-card:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.05);
+        }
+
+        .scenario-content {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .scenario-icon {
+            background: linear-gradient(135deg, #01022A, #02044A);
+            padding: 15px;
+            border-radius: 15px;
+            min-width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .anim-icon {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .anim-icon .arrow {
+            width: 0;
+            height: 0;
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .download-anim .arrow {
+            border-top: 10px solid white;
+            top: -15px;
+            opacity: 0;
+            animation: moveDown 2s infinite ease-in-out;
+        }
+
+        .upload-anim .arrow {
+            border-bottom: 10px solid white;
+            bottom: -15px;
+            opacity: 0;
+            animation: moveUp 2s infinite ease-in-out;
+        }
+
+        @keyframes moveDown {
+            0% {
+                top: -15px;
+                opacity: 0;
+            }
+
+            50% {
+                opacity: 1;
+            }
+
+            100% {
+                top: 45px;
+                opacity: 0;
+            }
+        }
+
+        @keyframes moveUp {
+            0% {
+                bottom: -15px;
+                opacity: 0;
+            }
+
+            50% {
+                opacity: 1;
+            }
+
+            100% {
+                bottom: 45px;
+                opacity: 0;
+            }
+        }
+
+        .scenario-card:hover .scenario-icon {
+            transform: scale(1.1);
+        }
+
+        .scenario-info h3 {
+            color: white;
+            font-size: 1.2rem;
+            margin-bottom: 5px;
+        }
+
+        .scenario-info p {
+            color: #ffffff;
+            font-size: 0.95rem;
+            opacity: 0.9;
+        }
+
+        .test-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 40px;
+        }
+
+        .test-title {
+            text-align: center;
+            color: white;
+            font-size: 2rem;
+            margin-bottom: 30px;
+        }
+
+        .progress-container {
+            margin-bottom: 30px;
+        }
+
+        .progress-bar {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 25px;
+            height: 40px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-fill {
+            background: linear-gradient(90deg, #01022A, #02044A);
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .progress-text {
+            text-align: center;
+            color: #ffffff;
+            margin-top: 10px;
+            opacity: 0.9;
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .result-card {
+            border-radius: 15px;
+            padding: 25px;
+            border: 2px solid;
+            position: relative;
+            overflow: visible;
+        }
+
+        .result-card.g4 {
+            background: rgba(249, 115, 22, 0.2);
+            border-color: #fb923c;
+        }
+
+        .result-card.g5 {
+            background: rgba(34, 197, 94, 0.2);
+            border-color: #4ade80;
+        }
+
+        .result-card.empty {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+
+        .result-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .result-icon {
+            padding: 10px;
+            border-radius: 10px;
+            width: 45px;
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .result-icon.g4 {
+            background: #f97316;
+            color: white;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .result-icon.g5 {
+            background: transparent;
+        }
+
+        .result-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .result-header h3 {
+            color: white;
+            font-size: 1.8rem;
+            margin: 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .result-header img {
+            height: 40px;
+            width: auto;
+            object-fit: contain;
+        }
+
+        .result-info {
+            color: #ffffff;
+            margin-bottom: 10px;
+            opacity: 0.9;
+        }
+
+        .result-info span {
+            font-weight: 600;
+        }
+
+        .test-button {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: bold;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .test-button.g4 {
+            background: #DFB803;
+        }
+
+        .test-button.g4:hover {
+            background: #C5A003;
+        }
+
+        .test-button.g5 {
+            background: #01022A;
+        }
+
+        .test-button.g5:hover {
+            background: #02044A;
+        }
+
+        .test-button.g5:disabled {
+            background: #01022A;
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .test-button:disabled {
+            background: #6b7280;
+            cursor: not-allowed;
+        }
+
+        .comparison-box {
+            background: linear-gradient(135deg, rgba(1, 2, 42, 0.2), rgba(2, 4, 74, 0.2));
+            border: 2px solid #02044A;
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.8;
+            }
+        }
+
+        .comparison-title {
+            color: white;
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+        }
+
+        .comparison-result {
+            color: white;
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+
+        .comparison-multiplier {
+            color: #4ade80;
+            font-size: 2.5rem;
+            font-weight: bold;
+        }
+
+        .comparison-text {
+            color: #ffffff;
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .reset-button {
+            width: 100%;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            color: white;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s;
+        }
+
+        .reset-button:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .splash-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .splash-screen.hidden {
+            display: none;
+        }
+
+        .splash-video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .splash-touch-indicator {
+            position: absolute;
+            top: 32%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 10000;
+            pointer-events: none;
+            animation: breathe 2.5s ease-in-out infinite;
+        }
+
+        @keyframes breathe {
+
+            0%,
+            100% {
+                transform: translate(-50%, -50%) scale(1);
+            }
+
+            50% {
+                transform: translate(-50%, -50%) scale(1.08);
+            }
+        }
+
+        /* Parmak işareti emoji */
+        .splash-finger-pointer {
+            position: absolute;
+            top: 32%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(180deg);
+            font-size: 120px;
+            animation: tap 1.5s ease-in-out infinite;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        @keyframes tap {
+
+            0%,
+            100% {
+                transform: translate(-50%, -50%) translateY(0) rotate(180deg) scale(1);
+                opacity: 0.9;
+            }
+
+            50% {
+                transform: translate(-50%, -50%) translateY(10px) rotate(180deg) scale(0.9);
+                opacity: 1;
+            }
+        }
+
+        @keyframes touchPulse {
+
+            0%,
+            100% {
+                transform: translateX(-50%) scale(1);
+                opacity: 0.3;
+            }
+
+            50% {
+                transform: translateX(-50%) scale(1.5);
+                opacity: 0.1;
+            }
+        }
+
+        /* Parlayan halkalar efekti */
+        .splash-glow-ring {
+            position: absolute;
+            top: 32%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 300px;
+            height: 300px;
+            border: 3px solid rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            animation: glowPulse 2.5s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        .splash-glow-ring:nth-child(2) {
+            animation-delay: 0.8s;
+        }
+
+        @keyframes glowPulse {
+            0% {
+                width: 300px;
+                height: 300px;
+                opacity: 1;
+            }
+
+            100% {
+                width: 500px;
+                height: 500px;
+                opacity: 0;
+            }
+        }
+
+        svg {
+            width: 24px;
+            height: 24px;
+            fill: white;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="splashScreen" class="splash-screen hidden">
+        <video class="splash-video" autoplay loop muted playsinline>
+            <source src="videos/splash-video.mp4" type="video/mp4">
+            <source src="videos/splash-video.webm" type="video/webm">
+        </video>
+        <div class="splash-glow-ring"></div>
+        <div class="splash-glow-ring"></div>
+        <div class="splash-touch-indicator">
+            <div class="splash-finger-pointer">👇</div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <div class="header-title-container">
+                <img id="teknolojiImage" src="images/teknoloji.webp" alt="Teknoloji" class="header-center-image" />
+                <img src="images/gelismis.gif" alt="Gelişmiş" class="header-star-image top-left" />
+                <img src="images/genis.gif" alt="Geniş" class="header-star-image top-right" />
+                <img src="images/guclu.gif" alt="Güçlü" class="header-star-image top-center" />
+                <img src="images/gercek.gif" alt="Gerçek" class="header-star-image bottom-left" />
+                <img src="images/guvenilir.gif" alt="Güvenilir" class="header-star-image bottom-right" />
+                <p class="header-simulate-text">Turkcell 5G'sini simüle edin</p>
+            </div>
+            <p>Farklı senaryolarda 4G ve 5G hızlarını simüle ederek karşılaştırın</p>
+        </div>
+
+        <div id="scenariosSection">
+            <div class="scenarios-grid" id="scenariosGrid"></div>
+        </div>
+
+        <div id="testSection" class="hidden">
+            <div class="test-container">
+                <h2 class="test-title" id="testTitle"></h2>
+
+                <div id="progressContainer" class="progress-container hidden">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <p class="progress-text">Simüle ediliyor...</p>
+                </div>
+
+                <div class="results-grid">
+                    <div class="result-card empty g4" id="result4G">
+                        <div class="result-header">
+                            <h3>4G</h3>
+                        </div>
+                        <div id="result4GContent">
+                            <button class="test-button g4" onclick="test4G()">4G ile Simüle Et</button>
+                        </div>
+                    </div>
+
+                    <div class="result-card empty g5" id="result5G">
+                        <div class="result-header">
+                            <div class="result-icon g5">
+                                <img src="images/5g.png" alt="5G" />
+                            </div>
+                        </div>
+                        <div id="result5GContent">
+                            <button class="test-button g5" onclick="test5G()" disabled>5G ile Simüle Et</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="comparisonBox" class="comparison-box hidden">
+                    <h3 class="comparison-title">Karşılaştırma Sonucu</h3>
+                    <p class="comparison-result">
+                        5G, 4G'den <span class="comparison-multiplier" id="multiplier"></span> daha hızlı!
+                    </p>
+                    <p class="comparison-text">
+                        Bu senaryoda 5G teknolojisi ile çok daha kısa sürede işlem tamamlandı.
+                    </p>
+                </div>
+
+                <button class="reset-button" onclick="resetTest()">Yeni Simülasyon Yap</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var scenarios = [
+            { id: 1, name: 'TV+ Film İndir', type: 'download', size: 4.5, unit: 'GB', time4G: { min: 45, sec: 30, variance: 15 }, time5G: { min: 4, sec: 15, variance: 8 } },
+            { id: 2, name: 'TV+ Dizi İndir', type: 'download', size: 12, unit: 'GB', time4G: { min: 120, sec: 45, variance: 20 }, time5G: { min: 11, sec: 20, variance: 12 } },
+            { id: 5, name: 'Bip\'ten Video Gönder', type: 'upload', size: 150, unit: 'MB', time4G: { min: 2, sec: 15, variance: 8 }, time5G: { min: 0, sec: 13, variance: 4 } },
+            { id: 8, name: 'Fizy\'den Albüm İndir', type: 'download', size: 350, unit: 'MB', time4G: { min: 4, sec: 20, variance: 7 }, time5G: { min: 0, sec: 25, variance: 3 } },
+            { id: 9, name: 'Lifebox Video Yedekle', type: 'upload', size: 8, unit: 'GB', time4G: { min: 95, sec: 30, variance: 18 }, time5G: { min: 9, sec: 0, variance: 10 } },
+            { id: 12, name: 'Lifebox Fotoğraf Yedekleme', type: 'upload', size: 5.5, unit: 'GB', time4G: { min: 65, sec: 0, variance: 15 }, time5G: { min: 6, sec: 10, variance: 8 } },
+            { id: 3, name: 'Steam\'den Oyun İndir', type: 'download', size: 50, unit: 'GB', time4G: { min: 500, sec: 0, variance: 30 }, time5G: { min: 47, sec: 0, variance: 15 } },
+            { id: 4, name: 'YouTube\'a Video Yükle', type: 'upload', size: 2.5, unit: 'GB', time4G: { min: 35, sec: 20, variance: 12 }, time5G: { min: 3, sec: 30, variance: 7 } },
+            { id: 6, name: 'Instagram\'a HD Video Yükle', type: 'upload', size: 800, unit: 'MB', time4G: { min: 12, sec: 30, variance: 10 }, time5G: { min: 1, sec: 10, variance: 5 } },
+            { id: 7, name: 'Zoom Kaydı Yükle', type: 'upload', size: 1.8, unit: 'GB', time4G: { min: 25, sec: 40, variance: 12 }, time5G: { min: 2, sec: 25, variance: 6 } },
+            { id: 10, name: 'App Store Oyun İndir', type: 'download', size: 3.2, unit: 'GB', time4G: { min: 32, sec: 15, variance: 11 }, time5G: { min: 3, sec: 5, variance: 5 } },
+            { id: 11, name: 'TikTok\'a Video Yükle', type: 'upload', size: 85, unit: 'MB', time4G: { min: 1, sec: 10, variance: 5 }, time5G: { min: 0, sec: 8, variance: 2 } },
+            { id: 13, name: 'PlayStation Oyun İndir', type: 'download', size: 85, unit: 'GB', time4G: { min: 850, sec: 0, variance: 40 }, time5G: { min: 80, sec: 0, variance: 20 } },
+            { id: 14, name: 'Xbox Oyun İndir', type: 'download', size: 75, unit: 'GB', time4G: { min: 750, sec: 0, variance: 35 }, time5G: { min: 70, sec: 0, variance: 18 } }
+        ];
+
+        var selectedScenario = null;
+        var result4GData = null;
+        var result5GData = null;
+
+        function renderScenarios() {
+            var grid = document.getElementById('scenariosGrid');
+            grid.innerHTML = '';
+
+            for (var i = 0; i < scenarios.length; i++) {
+                var scenario = scenarios[i];
+                var card = document.createElement('div');
+                card.className = 'scenario-card';
+                card.setAttribute('data-id', scenario.id);
+                card.onclick = (function (id) {
+                    return function () { selectScenario(id); };
+                })(scenario.id);
+
+                var iconClass = scenario.type === 'download' ? 'download-anim' : 'upload-anim';
+                var iconHtml = '<div class="anim-icon ' + iconClass + '"><div class="arrow"></div></div>';
+
+                card.innerHTML = '<div class="scenario-content"><div class="scenario-icon">' + iconHtml + '</div><div class="scenario-info"><h3>' + scenario.name + '</h3><p>' + scenario.size + ' ' + scenario.unit + '</p></div></div>';
+
+                grid.appendChild(card);
+            }
+        }
+
+        function selectScenario(id) {
+            for (var i = 0; i < scenarios.length; i++) {
+                if (scenarios[i].id === id) {
+                    selectedScenario = scenarios[i];
+                    break;
+                }
+            }
+            document.getElementById('scenariosSection').classList.add('hidden');
+            document.getElementById('testSection').classList.remove('hidden');
+            document.getElementById('testTitle').textContent = selectedScenario.name;
+        }
+
+        function getRandomTime(baseMin, baseSec, variance) {
+            var totalSeconds = baseMin * 60 + baseSec;
+            var variancePercent = (Math.random() * 2 - 1) * (variance / 100);
+            var newTotalSeconds = Math.round(totalSeconds * (1 + variancePercent));
+            var minutes = Math.floor(newTotalSeconds / 60);
+            var seconds = newTotalSeconds % 60;
+            return { min: minutes, sec: seconds, totalSeconds: newTotalSeconds };
+        }
+
+        function formatTime(minutes, seconds) {
+            if (minutes === 0) {
+                return seconds + ' saniye';
+            }
+            if (minutes < 60) {
+                return minutes + ' dakika ' + seconds + ' saniye';
+            }
+            var hours = Math.floor(minutes / 60);
+            var mins = minutes % 60;
+            return hours + ' saat ' + mins + ' dakika ' + seconds + ' saniye';
+        }
+
+        function simulateProgress(duration, callback) {
+            var progressContainer = document.getElementById('progressContainer');
+            var progressFill = document.getElementById('progressFill');
+
+            progressContainer.classList.remove('hidden');
+            progressFill.style.width = '0%';
+
+            var interval = 50;
+            var steps = duration / interval;
+            var currentStep = 0;
+
+            var timer = setInterval(function () {
+                currentStep++;
+                var progress = (currentStep / steps) * 100;
+                progressFill.style.width = progress + '%';
+                progressFill.textContent = Math.round(progress) + '%';
+
+                if (currentStep >= steps) {
+                    clearInterval(timer);
+                    setTimeout(function () {
+                        progressContainer.classList.add('hidden');
+                        callback();
+                    }, 500);
+                }
+            }, interval);
+        }
+
+        function test4G() {
+            var randomTime = getRandomTime(
+                selectedScenario.time4G.min,
+                selectedScenario.time4G.sec,
+                selectedScenario.time4G.variance
+            );
+
+            simulateProgress(3000, function () {
+                result4GData = {
+                    size: selectedScenario.size,
+                    unit: selectedScenario.unit,
+                    time: formatTime(randomTime.min, randomTime.sec),
+                    totalSeconds: randomTime.totalSeconds
+                };
+
+                document.getElementById('result4G').classList.remove('empty');
+                document.getElementById('result4GContent').innerHTML = '<p class="result-info"><span>Boyut:</span> ' + result4GData.size + ' ' + result4GData.unit + '</p><p class="result-info"><span>Süre:</span> ' + result4GData.time + '</p>';
+
+                document.querySelector('#result5GContent button').disabled = false;
+            });
+        }
+
+        function test5G() {
+            var randomTime = getRandomTime(
+                selectedScenario.time5G.min,
+                selectedScenario.time5G.sec,
+                selectedScenario.time5G.variance
+            );
+
+            simulateProgress(2000, function () {
+                result5GData = {
+                    size: selectedScenario.size,
+                    unit: selectedScenario.unit,
+                    time: formatTime(randomTime.min, randomTime.sec),
+                    totalSeconds: randomTime.totalSeconds
+                };
+
+                document.getElementById('result5G').classList.remove('empty');
+                document.getElementById('result5GContent').innerHTML = '<p class="result-info"><span>Boyut:</span> ' + result5GData.size + ' ' + result5GData.unit + '</p><p class="result-info"><span>Süre:</span> ' + result5GData.time + '</p>';
+
+                showComparison();
+            });
+        }
+
+        function showComparison() {
+            var multiplier = (result4GData.totalSeconds / result5GData.totalSeconds).toFixed(1);
+            document.getElementById('multiplier').textContent = multiplier + 'x';
+            document.getElementById('comparisonBox').classList.remove('hidden');
+        }
+
+        function resetTest() {
+            selectedScenario = null;
+            result4GData = null;
+            result5GData = null;
+
+            document.getElementById('testSection').classList.add('hidden');
+            document.getElementById('scenariosSection').classList.remove('hidden');
+            document.getElementById('comparisonBox').classList.add('hidden');
+
+            document.getElementById('result4G').classList.add('empty');
+            document.getElementById('result5G').classList.add('empty');
+
+            document.getElementById('result4GContent').innerHTML = '<button class="test-button g4" onclick="test4G()">4G ile Simüle Et</button>';
+            document.getElementById('result5GContent').innerHTML = '<button class="test-button g5" onclick="test5G()" disabled>5G ile Simüle Et</button>';
+        }
+
+        // Splash screen - idle timeout ile otomatik açılma
+        (function () {
+            var splashScreen = document.getElementById('splashScreen');
+            var splashVideo = document.querySelector('.splash-video');
+            var idleTimeout = 30000; // 30 saniye (milisaniye cinsinden)
+            var idleTimer = null;
+
+            // Splash screen'i açma fonksiyonu
+            function openSplashScreen() {
+                if (splashScreen) {
+                    splashScreen.classList.remove('hidden');
+                    if (splashVideo) {
+                        splashVideo.play().catch(function (error) {
+                            console.log('Video oynatılamadı:', error);
+                        });
+                    }
+                }
+            }
+
+            // Splash screen'i kapatma fonksiyonu
+            function closeSplashScreen() {
+                if (splashScreen && !splashScreen.classList.contains('hidden')) {
+                    splashScreen.classList.add('hidden');
+                    if (splashVideo) {
+                        splashVideo.pause();
+                    }
+                }
+            }
+
+            // Idle timer'ı sıfırla (sadece timer'ı sıfırla, splash screen'i kapatma)
+            function resetIdleTimer() {
+                clearTimeout(idleTimer);
+                // Eğer splash screen açıksa kapat
+                if (splashScreen && !splashScreen.classList.contains('hidden')) {
+                    return; // Splash screen açıksa timer başlatma
+                }
+                // Timer'ı başlat - belirli süre sonra splash screen açılacak
+                idleTimer = setTimeout(function () {
+                    openSplashScreen();
+                }, idleTimeout);
+            }
+
+            // Sayfa yüklendiğinde splash screen'i aç
+            window.addEventListener('load', function () {
+                openSplashScreen();
+            });
+
+            // Splash screen'e dokunulduğunda kapat ve timer'ı başlat
+            if (splashScreen) {
+                splashScreen.addEventListener('touchstart', function (e) {
+                    e.preventDefault();
+                    closeSplashScreen();
+                    resetIdleTimer();
+                });
+
+                splashScreen.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    closeSplashScreen();
+                    resetIdleTimer();
+                });
+            }
+
+            // Kullanıcı etkileşimlerini takip et (splash screen kapalıyken)
+            var userEvents = ['touchstart', 'touchmove', 'touchend', 'mousedown', 'mousemove', 'keydown', 'scroll', 'click'];
+            userEvents.forEach(function (event) {
+                document.addEventListener(event, function () {
+                    // Sadece splash screen kapalıyken timer'ı sıfırla
+                    if (splashScreen && splashScreen.classList.contains('hidden')) {
+                        resetIdleTimer();
+                    }
+                }, { passive: true });
+            });
+        })();
+
+        // Tam ekran açma/kapatma - teknoloji görseline tıklama
+        (function () {
+            var teknolojiImage = document.getElementById('teknolojiImage');
+
+            if (teknolojiImage) {
+                teknolojiImage.addEventListener('click', function () {
+                    if (!document.fullscreenElement && !document.webkitFullscreenElement &&
+                        !document.mozFullScreenElement && !document.msFullscreenElement) {
+                        // Tam ekran aç
+                        if (document.documentElement.requestFullscreen) {
+                            document.documentElement.requestFullscreen();
+                        } else if (document.documentElement.webkitRequestFullscreen) {
+                            document.documentElement.webkitRequestFullscreen();
+                        } else if (document.documentElement.mozRequestFullScreen) {
+                            document.documentElement.mozRequestFullScreen();
+                        } else if (document.documentElement.msRequestFullscreen) {
+                            document.documentElement.msRequestFullscreen();
+                        }
+                    } else {
+                        // Tam ekran kapat
+                        if (document.exitFullscreen) {
+                            document.exitFullscreen();
+                        } else if (document.webkitExitFullscreen) {
+                            document.webkitExitFullscreen();
+                        } else if (document.mozCancelFullScreen) {
+                            document.mozCancelFullScreen();
+                        } else if (document.msExitFullscreen) {
+                            document.msExitFullscreen();
+                        }
+                    }
+                });
+            }
+        })();
+
+        renderScenarios();
+
+        // Sağ tık basmayı engelle
+        document.addEventListener('contextmenu', function (e) {
+            e.preventDefault();
+            return false;
+        });
+    </script>
+</body>
+
+</html>
